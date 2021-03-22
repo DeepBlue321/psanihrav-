@@ -19,6 +19,7 @@ class Play extends Phaser.Scene {
     this.load.image("heart", "./assets/heart.png");
     this.load.image("particle", "./assets/particle.jpg");
     this.load.image("red", "./assets/red.png");
+    this.load.image("pauza", "./assets/pauza.png");
   }
 
   create() {
@@ -52,7 +53,7 @@ class Play extends Phaser.Scene {
 
   makeEnemy() {
     let Yplaces = [];
-    for (let i = 2; i < Math.floor(game.canvas.height / 32) - 1; i++) {
+    for (let i = 2; i < Math.floor(game.canvas.height / 32) - 2; i++) {
       Yplaces.push(i * 32);
     }
 
@@ -139,28 +140,14 @@ class Play extends Phaser.Scene {
   }
 
   pauseScreen() {
-    this.pausedPage = this.add.rectangle(
-      this.sys.game.canvas.width / 2,
-      this.sys.game.canvas.height / 2,
-      this.sys.game.canvas.width,
-      this.sys.game.canvas.height,
-      0x6666ff
-    );
-    this.textInfo1 = this.add.text(200, 80, "Pro navrácení: Ecs", {
-      fontSize: "25px",
-      fill: 0x6666ff,
-    });
-    this.textInfo2 = this.add.text(200, 150, "Pro ukončení: ctr + r", {
-      fontSize: "25px",
-      fill: 0x6666ff,
-    });
     this.scene.pause();
+    this.pausedPage = this.add.image(0, 0, "pauza").setOrigin(0, 0);
+
     this.isPaused = true;
   }
   unpauseScreen() {
     this.pausedPage.destroy();
-    this.textInfo1.destroy();
-    this.textInfo2.destroy();
+
     this.isPaused = false;
     this.scene.resume();
   }
@@ -195,7 +182,8 @@ class Play extends Phaser.Scene {
             this.unpauseScreen();
           } else {
             this.pauseScreen();
-            if (keysPressed["Control"] && e.key == "r") {
+
+            if (this.keysPressed["Control"] && e.key == "r") {
               console.log(location);
               this.scene.remove();
               game.scene.add("play", Play, true);
@@ -237,10 +225,10 @@ class Play extends Phaser.Scene {
   }
 
   prepareBackground() {
-    this.life = new Life(20, 50, this);
+    this.life = new Life(20, 32, this);
 
-    this.score = new Score(15, 20, 500, this);
-    this.add.text(460, 20, "Pro pauznutí: Ecs", {
+    this.score = new Score(game.canvas.width / 2 - 200 / 2, 28, 500, this);
+    this.add.text(game.canvas.width - 150, 20, "Pro pauznutí: Ecs", {
       fontSize: "12px",
       fill: "#0xff",
     });
@@ -252,6 +240,7 @@ class Play extends Phaser.Scene {
       {
         fontSize: "32px",
         fill: "#00ff00",
+        fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif',
       }
     );
   }

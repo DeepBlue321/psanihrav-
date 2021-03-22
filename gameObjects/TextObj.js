@@ -24,6 +24,7 @@ class TextObj {
       this.correctLetters,
       {
         fontSize: "32px",
+        fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif',
         fill: "#00ff00",
       }
     );
@@ -34,6 +35,7 @@ class TextObj {
       this.falseLetters,
       {
         fontSize: "32px",
+        fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif',
         fill: "#000000",
       }
     );

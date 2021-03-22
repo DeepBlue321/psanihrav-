@@ -7,6 +7,7 @@
     <script src="./GameObjects/Score.js"></script>
     <script src="./GameObjects/Life.js"></script>
     <script src="./Scenes/Play.js"></script>
+    <script src="./Scenes/PrePlay.js"></script>
 
     <script src="./lib/basicsFunc.js"></script>
     <script src="./GameObjects/TextObj.js"></script>
@@ -23,11 +24,11 @@
     <script type="text/javascript">
       var scene = new Phaser.Scene("game");
       var config = {
-        width: 600,
-        height: 500,
+        width: 800,
+        height: 450,
         backgroundColor: 0xfffffff,
         transparent: true,
-        scene: [Play],
+        scene: [PrePlay, Play],
       };
 
       var game = new Phaser.Game(config);
