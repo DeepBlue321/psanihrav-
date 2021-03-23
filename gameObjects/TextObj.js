@@ -86,7 +86,6 @@ class TextObj {
           scale: { start: 0.04, end: 0 },
         })
       );
-      console.log(this.scene.emitter);
       this.scene.time.delayedCall(150, () => {
         this.scene.emitter.forEach((emitter) => {
           emitter.stop();

@@ -24,15 +24,12 @@ class Life {
   }
 
   decLife(amount) {
-    console.log(this.images);
-    console.log(this.life);
     this.images[this.life - 1].destroy();
     this.life -= amount;
     if (this.life == 0) {
       this.scene.isGameOver = true;
       this.scene.gameOver();
-      /*   this.scene.scene.boot();
-      this.scene.scene.start("gameOver"); */
+      this.scene.gameState = "gameOver";
     }
   }
 }

@@ -2,8 +2,9 @@ class Play extends Phaser.Scene {
   constructor() {
     super("play");
     this.enem = [];
-    this.isPaused = false;
-    this.isGameOver = false;
+    //this.isPaused = false;
+    //this.isGameOver = false;
+    this.gameState = "play";
     this.score;
     this.life;
     this.numEnem = 0;
@@ -94,6 +95,7 @@ class Play extends Phaser.Scene {
 
   checkForLetter(letter) {
     let oneCorrect = false;
+    var BreakException = {};
     if (!this.targetWord) {
       this.enem.forEach((enemy, key) => {
         if (enemy) {
@@ -169,6 +171,7 @@ class Play extends Phaser.Scene {
     });
     this.scene.pause();
   }
+
   gameInput() {
     document.addEventListener("keyup", (e) => {
       delete this.keysPressed[e.key];
@@ -176,31 +179,29 @@ class Play extends Phaser.Scene {
     document.addEventListener("keydown", (e) => {
       this.keysPressed[e.key] = true;
 
-      if (e.key === "Escape") {
-        if (!this.isGameOver) {
-          if (this.isPaused) {
-            this.unpauseScreen();
-          } else {
-            this.pauseScreen();
-
-            if (this.keysPressed["Control"] && e.key == "r") {
-              console.log(location);
-              this.scene.remove();
-              game.scene.add("play", Play, true);
-              this.isGameOver = false;
-            }
-          }
+      if (this.gameState === "play") {
+        if (e.key === "Escape") {
+          this.gameState = "pause";
+          this.pauseScreen();
         } else {
-          if (keysPressed["Control"] && e.key == "r") {
-            console.log(location);
+          this.checkForLetter(e.key);
+        }
+      } else if (this.gameState === "pause") {
+        if (e.key === "Escape") {
+          this.gameState = "play";
+          this.unpauseScreen();
+
+          if (this.keysPressed["Control"] && e.key == "r") {
             this.scene.remove();
             game.scene.add("play", Play, true);
             this.isGameOver = false;
           }
         }
-      } else {
-        if (!this.isGameOver && !this.isPaused) {
-          this.checkForLetter(e.key);
+      } else if (this.gameState === "gameOver") {
+        if (this.keysPressed["Control"] && e.key == "r") {
+          this.scene.remove();
+          game.scene.add("play", Play, true);
+          this.isGameOver = false;
         }
       }
     });
@@ -239,7 +240,7 @@ class Play extends Phaser.Scene {
       "",
       {
         fontSize: "32px",
-        fill: "#00ff00",
+        fill: "#000000",
         fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif',
       }
     );

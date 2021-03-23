@@ -14,7 +14,10 @@ class PrePlay extends Phaser.Scene {
   gameInput() {
     document.addEventListener("keydown", (e) => {
       if (this.prePlay) {
-        this.damageEffect();
+        if (e.key === " ") {
+          this.damageEffect();
+          this.prePlay = false;
+        }
       }
     });
   }
@@ -24,8 +27,6 @@ class PrePlay extends Phaser.Scene {
       this.screen.alpha -= 0.1;
       k++;
       if (k == 18) {
-        this.prePlay = false;
-
         this.scene.start("play");
       }
     }, 50);
