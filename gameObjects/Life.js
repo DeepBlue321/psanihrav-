@@ -29,6 +29,8 @@ class Life {
     if (this.life == 0) {
       this.scene.isGameOver = true;
       this.scene.gameOver();
+      clearInterval(this.scene.secondsCounting);
+
       this.scene.gameState = "gameOver";
     }
   }

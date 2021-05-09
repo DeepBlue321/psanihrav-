@@ -15,13 +15,14 @@ class PrePlay extends Phaser.Scene {
     document.addEventListener("keydown", (e) => {
       if (this.prePlay) {
         if (e.key === " ") {
-          this.damageEffect();
+          //this.disappearingEffect();
+          this.scene.start("play");
           this.prePlay = false;
         }
       }
     });
   }
-  damageEffect() {
+  disappearingEffect() {
     let k = 0;
     this.createEnemInterval = setInterval(() => {
       this.screen.alpha -= 0.1;

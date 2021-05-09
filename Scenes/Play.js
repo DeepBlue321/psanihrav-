@@ -2,15 +2,14 @@ class Play extends Phaser.Scene {
   constructor() {
     super("play");
     this.enem = [];
-    //this.isPaused = false;
-    //this.isGameOver = false;
+
     this.gameState = "play";
     this.score;
     this.life;
     this.numEnem = 0;
     this.targetWord = null;
     this.keysPressed = {};
-
+    this.targetedWords = [];
     this.interval = 150;
     this.k = 0;
     this.deltaX = 1;
@@ -18,15 +17,20 @@ class Play extends Phaser.Scene {
   }
   preload() {
     this.load.image("heart", "./assets/heart.png");
-    this.load.image("particle", "./assets/particle.jpg");
+    this.load.image("particle", "./assets/greenEffect.png");
     this.load.image("red", "./assets/red.png");
     this.load.image("pauza", "./assets/pauza.png");
   }
 
   create() {
+    this.seconds = 0;
+    this.secondsCounting = setInterval(() => {
+      this.seconds++;
+      console.log(this.seconds);
+    }, 1000);
     this.gameInput();
     this.prepareBackground();
-    this.wordsToUse = this.createRandomStringArr(["f", "d", "j", "k"], 10);
+    this.wordsToUse = this.createRandomStringArr(["f", "d", "j", "k"], 25);
   }
 
   update() {
@@ -35,17 +39,23 @@ class Play extends Phaser.Scene {
       this.makeEnemy();
       this.k = 0;
       this.interval -= 1;
-      this.deltaX += 0.08;
+      this.deltaX += 0.03;
     }
 
     this.enem.forEach((enemy, key) => {
       if (enemy) {
         enemy.update(this.deltaX);
+
         if (enemy.isOut()) {
+          if (this.enem[key].correctLetters === this.controlText.text) {
+            this.controlText.setText("");
+          }
+          this.targetWord = null;
           this.enem[key].death();
           this.life.decLife(1);
-          this.enem.splice(key, 1);
-          this.controlText.setText("");
+
+          this.enem[key] = null;
+
           this.damageEffect();
         }
       }
@@ -92,11 +102,72 @@ class Play extends Phaser.Scene {
     this.life.decLife(1);
     this.damageEffect();
   }
+  _writeOfWord(key) {
+    this.enem[key].death();
+    console.log("dfsdf");
+    this.enem[key].gainPointsAnim();
+    this.enem[key] = null;
+    this.controlText.setText("");
+    this.score.addScore(10);
+  }
 
   checkForLetter(letter) {
     let oneCorrect = false;
+
+    if (this.targetedWords.length === 0) {
+      console.log("nová");
+      this.enem.forEach((enemy, key) => {
+        if (enemy) {
+          if (enemy.falseLetters[0] == letter) {
+            enemy.incScore();
+            this.controlText.setText(this.controlText.text + letter);
+            oneCorrect = true;
+            this.targetedWords.push(key);
+            if (enemy.isDone()) {
+              this._writeOfWord(key);
+            }
+          }
+        }
+      });
+    } else {
+      this.targetedWords.forEach((target, key) => {
+        if (this.enem[target]) {
+          console.log(this.targetedWords);
+          if (this.enem[target].falseLetters[0] == letter) {
+            console.log("trefa");
+            this.enem[target].incScore();
+            this.controlText.setText(this.controlText.text + letter);
+            oneCorrect = true;
+
+            if (this.enem[target].isDone()) {
+              this._writeOfWord(target);
+              this.targetedWords = [];
+            }
+          } else {
+            this.enem[target].reset();
+            this.targetedWords[key] = null;
+          }
+        }
+      });
+    }
+
+    if (!oneCorrect) {
+      this.damagePlayer();
+      this.targetedWords.forEach((target, key) => {
+        if (this.enem[target]) {
+          this.enem[target].reset();
+        }
+      });
+
+      this.controlText.setText("");
+      this.targetedWords = [];
+    }
+  }
+
+  checkFordLetter(letter) {
+    let oneCorrect = false;
     var BreakException = {};
-    if (!this.targetWord) {
+    if (this.targetWord === undefined || this.targetWord === null) {
       this.enem.forEach((enemy, key) => {
         if (enemy) {
           if (enemy.falseLetters[0] == letter) {
@@ -104,26 +175,33 @@ class Play extends Phaser.Scene {
             enemy.incScore();
             this.controlText.setText(this.controlText.text + letter);
             oneCorrect = true;
-            if (enemy.isDone()) {
+            /*  if (enemy.isDone()) {
               this.enem[key].death();
+              console.log("dfsdf");
+              this.enem[key].gainPointsAnim();
               this.enem[key] = null;
               this.controlText.setText("");
               this.score.addScore(20);
-            }
+            } */
             throw BreakException;
           }
         }
       });
     } else {
+      console.log(this.targetWord);
       if (this.enem[this.targetWord].falseLetters[0] == letter) {
         this.enem[this.targetWord].incScore();
         this.controlText.setText(this.controlText.text + letter);
         oneCorrect = true;
         if (this.enem[this.targetWord].isDone()) {
           this.enem[this.targetWord].death();
+          this.enem[this.targetWord].gainPointsAnim();
           this.enem[this.targetWord] = null;
           this.controlText.setText("");
           this.score.addScore(20);
+          if (this.score.score === 480) {
+            this.gameOver();
+          }
 
           this.targetWord = null;
         }
@@ -165,7 +243,7 @@ class Play extends Phaser.Scene {
       fontSize: "25px",
       fill: 0x6666ff,
     });
-    this.textInfo2 = this.add.text(200, 150, "Pro restartování: ctr + r", {
+    this.textInfo2 = this.add.text(200, 150, "Pro restartování: shift + r", {
       fontSize: "25px",
       fill: 0x6666ff,
     });
@@ -190,15 +268,20 @@ class Play extends Phaser.Scene {
         if (e.key === "Escape") {
           this.gameState = "play";
           this.unpauseScreen();
-
-          if (this.keysPressed["Control"] && e.key == "r") {
-            this.scene.remove();
-            game.scene.add("play", Play, true);
-            this.isGameOver = false;
-          }
+          console.log(this.keysPressed);
+        }
+        if (this.keysPressed["Shift"] && e.key == "R") {
+          this.scene.remove();
+          game.scene.add("play", Play, true);
+          this.isGameOver = false;
+        }
+        if (this.keysPressed["Shift"] && e.key == "R") {
+          this.scene.remove();
+          game.scene.add("play", Play, true);
+          this.isGameOver = false;
         }
       } else if (this.gameState === "gameOver") {
-        if (this.keysPressed["Control"] && e.key == "r") {
+        if (this.keysPressed["Shift"] && e.key == "R") {
           this.scene.remove();
           game.scene.add("play", Play, true);
           this.isGameOver = false;
@@ -209,11 +292,22 @@ class Play extends Phaser.Scene {
   createRandomStringArr(letters, max) {
     let returnArr = [];
     let x = 0;
+
+    let l = 0;
+    let k = 0;
     while (x < max) {
-      const textLength = getRandomInt(2, 7);
+      const textLength = getRandomInt(3, 8);
       let resultText = "";
 
-      for (let i = 0; i < textLength; i++) {
+      resultText += letters[k % 4];
+      resultText += letters[l % 4];
+      l++;
+      k++;
+
+      if (k % 4 == 0) {
+        l++;
+      }
+      for (let i = 2; i < textLength; i++) {
         const randomElement =
           letters[Math.floor(Math.random() * letters.length)];
         resultText += randomElement;

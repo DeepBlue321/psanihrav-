@@ -45,8 +45,10 @@ class Score {
   }
 
   addScore(newScore) {
-    this.score += newScore;
-    this.drawScore = this._calcDrawScore();
-    this.fillLine = this._fillLine();
+    setTimeout(() => {
+      this.score += newScore;
+      this.drawScore = this._calcDrawScore();
+      this.fillLine = this._fillLine();
+    }, 500);
   }
 }
